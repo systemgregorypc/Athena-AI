@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genesis AI — Generador de Video IA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: #000000; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; overflow: hidden; border-top: 3px solid #fbbf24; }
+
+        /* Barra Superior */
+        header { height: 55px; background: #0a0a0a; border-bottom: 1px solid #1f1f1f; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-size: 1.1rem; font-weight: bold; color: #fbbf24; display: flex; align-items: center; gap: 10px; }
+        .logo span { background: rgba(251, 191, 36, 0.12); color: #fbbf24; font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(251, 191, 36, 0.35); }
+        .header-actions { display: flex; gap: 10px; align-items: center; }
+
+        .btn-save { background: #fbbf24; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 6px; }
+        .btn-save:hover { background: #f59e0b; }
+        .btn-save:disabled { background: #404040; color: #888; cursor: not-allowed; }
+
+        /* Área Central del Video */
+        .stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; background: radial-gradient(circle at center, #111111 0%, #000000 75%); }
+        
+        .video-frame { width: 100%; max-width: 820px; aspect-ratio: 16 / 9; background: #080808; border: 2px solid #262626; border-radius: 12px; position: relative; overflow: hidden; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95), 0 0 25px rgba(251, 191, 36, 0.08); display: flex; align-items: center; justify-content: center; }
+        .video-frame.active { border-color: #fbbf24; }
+
+        canvas#videoCanvas { width: 100%; height: 100%; display: block; }
+
+        .status-badge { position: absolute; top: 14px; left: 14px; background: rgba(0, 0, 0, 0.78); border: 1px solid #fbbf24; color: #fbbf24; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 6px; }
+        .rec-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; display: none; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Barra Inferior de Texto (Prompt) */
+        .prompt-dock { background: #0a0a0a; border-top: 1px solid #1f1f1f; padding: 16px 24px; display: flex; justify-content: center; }
+        .prompt-box { width: 100%; max-width: 820px; display: flex; gap: 10px; background: #121212; border: 1px solid #333333; padding: 8px; border-radius: 10px; transition: border-color 0.2s; }
+        .prompt-box:focus-within { border-color: #fbbf24; }
+
+        .prompt-box input { flex: 1; background: transparent; border: none; color: #ffffff; font-size: 0.95rem; padding: 8px 12px; outline: none; }
+        .prompt-box input::placeholder { color: #666666; }
+
+        .btn-generate { background: #fbbf24; color: #000000; border: none; padding: 10px 22px; border-radius: 7px; font-weight: bold; font-size: 0.9rem; cursor: pointer; transition: transform 0.15s, background 0.2s; white-space: nowrap; }
+        .btn-generate:hover { background: #f59e0b; transform: scale(1.02); }
+        .btn-generate:disabled { background: #404040; color: #888; cursor: not-allowed; transform: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">🎬 Genesis AI Video <span>Motor Generativo 2026</span></div>
+        <div class="header-actions">
+            <button class="btn-save" id="saveBtn" onclick="descargarVideo()" disabled>💾 Guardar Video PC / USB</button>
+        </div>
+    </header>
+
+    <main class="stage">
+        <div class="video-frame" id="videoFrame">
+            <div class="status-badge">
+                <span class="rec-dot" id="recDot"></span>
+                <span id="statusText">Esperando instrucción de video...</span>
+            </div>
+            <canvas id="videoCanvas" width="1280" height="720"></canvas>
+        </div>
+    </main>
+
+    <footer class="prompt-dock">
+        <div class="prompt-box">
+            <input type="text" id="promptInput" placeholder="Describe tu video: Ej. Nave espacial viajando por el cosmos dorado..." />
+            <button class="btn-generate" id="genBtn" onclick="generarVideo()">⚡ Generar Video</button>
+        </div>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('videoCanvas');
+        const ctx = canvas.getContext('2d');
+        const promptInput = document.getElementById('promptInput');
+        const genBtn = document.getElementById('genBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const statusText = document.getElementById('statusText');
+        const recDot = document.getElementById('recDot');
+        const videoFrame = document.getElementById('videoFrame');
+
+        let animId = null;
+        let recordedBlob = null;
+
+        // Pantalla inicial en espera
+        function dibujarEspera() {
+            ctx.fillStyle = '#080808';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.15)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
+
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = 'bold 34px Segoe UI, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('GENESIS AI — ESTUDIO DE VIDEO', canvas.width / 2, canvas.height / 2 - 15);
+
+            ctx.fillStyle = '#737373';
+            ctx.font = '20px Segoe UI, sans-serif';
+            ctx.fillText('Escribe tu escena en la barra inferior y presiona Generar Video', canvas.width / 2, canvas.height / 2 + 25);
+        }
+        dibujarEspera();
+
+        function generarVideo() {
+            const prompt = promptInput.value.trim();
+            if (!prompt) {
+                alert('Escribe primero una descripción para generar el video.');
+                return;
+            }
+
+            if (animId) cancelAnimationFrame(animId);
+            recordedBlob = null;
+            saveBtn.disabled = true;
+            genBtn.disabled = true;
+            videoFrame.classList.add('active');
+            recDot.style.display = 'inline-block';
+            statusText.textContent = 'Renderizando y grabando escena (6 seg)...';
+
+            // Detectar tema visual según el texto escrito
+            const pLower = prompt.toLowerCase();
+            let colorPrincipal = '#fbbf24'; // Dorado Genesis por defecto
+            let colorSecundario = '#f59e0b';
+            if (pLower.includes('mar') || pLower.includes('oceano') || pLower.includes('agua') || pLower.includes('azul')) {
+                colorPrincipal = '#38bdf8'; colorSecundario = '#0284c7';
+            } else if (pLower.includes('matrix') || pLower.includes('codigo') || pLower.includes('selva') || pLower.includes('verde')) {
+                colorPrincipal = '#34d399'; colorSecundario = '#059669';
+            } else if (pLower.includes('fuego') || pLower.includes('rojo') || pLower.includes('marte') || pLower.includes('sol')) {
+                colorPrincipal = '#f87171'; colorSecundario = '#dc2626';
+            }
+
+            // Configurar partículas dinámicas
+            const particulas = Array.from({ length: 90 }, () => ({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                r: Math.random() * 4 + 1.5,
+                vx: (Math.random() - 0.5) * 4,
+                vy: (Math.random() - 0.5) * 4
+            }));
+
+            // Iniciar grabación real del flujo de video (MediaRecorder)
+            const stream = canvas.captureStream(30);
+            const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+            const chunks = [];
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) chunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                recordedBlob = new Blob(chunks, { type: 'video/webm' });
+                recDot.style.display = 'none';
+                statusText.textContent = '✅ Video listo — Puedes guardarlo en tu PC o USB';
+                genBtn.disabled = false;
+                saveBtn.disabled = false;
+            };
+
+            mediaRecorder.start();
+
+            let frame = 0;
+            const totalFrames = 180; // 6 segundos a 30 fps
+
+            function animar() {
+                frame++;
+                // Fondo con estela cinemática
+                ctx.fillStyle = 'rgba(5, 5, 5, 0.25)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Ondas de energía centrales
+                const pulso = Math.sin(frame * 0.06) * 40 + 140;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, pulso, 0, Math.PI * 2);
+                ctx.strokeStyle = colorPrincipal;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, pulso * 1.45, 0, Math.PI * 2);
+                ctx.strokeStyle = colorSecundario;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Partículas en movimiento
+                particulas.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = colorPrincipal;
+                    ctx.fill();
+                });
+
+                // Texto superpuesto con animación de entrada
+                const alpha = Math.min(1, frame / 30);
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 38px Segoe UI, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.shadowColor = '#000';
+                ctx.shadowBlur = 12;
+                ctx.fillText(prompt.toUpperCase(), canvas.width / 2, canvas.height / 2 + 10);
+
+                ctx.fillStyle = colorPrincipal;
+                ctx.font = '18px Courier New, monospace';
+                ctx.fillText(`GENESIS AI RENDER ENGINE • FRAME ${frame}/${totalFrames}`, canvas.width / 2, canvas.height - 45);
+                ctx.restore();
+
+                if (frame < totalFrames) {
+                    animId = requestAnimationFrame(animar);
+                } else {
+                    mediaRecorder.stop();
+                }
+            }
+
+            animar();
+        }
+
+        function descargarVideo() {
+            if (!recordedBlob) return;
+            const url = URL.createObjectURL(recordedBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'genesis_ai_video.webm';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        promptInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') generarVideo();
+        });
+    </script>
+</body>
+</html>
