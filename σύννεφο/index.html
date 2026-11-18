@@ -15,7 +15,7 @@
 
         .header-right { display: flex; align-items: center; gap: 12px; }
         .user-email-box { display: flex; align-items: center; gap: 6px; background: #141414; border: 1px solid #262626; padding: 5px 10px; border-radius: 6px; }
-        .user-email-box input { background: transparent; border: none; color: #fbbf24; font-size: 0.8rem; width: 195px; outline: none; }
+        .user-email-box input { background: transparent; border: none; color: #fbbf24; font-size: 0.8rem; width: 190px; outline: none; }
         
         .balance-badge { background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); color: #34d399; padding: 5px 11px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
 
@@ -26,13 +26,13 @@
         /* Escenario Central 16:9 */
         .stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 18px; position: relative; background: radial-gradient(circle at center, #120f05 0%, #000000 75%); }
         
-        .video-frame { width: 100%; max-width: 850px; aspect-ratio: 16 / 9; background: #070707; border: 2px solid #262626; border-radius: 12px; position: relative; overflow: hidden; box-shadow: 0 20px 55px rgba(0, 0, 0, 0.95), 0 0 30px rgba(251, 191, 36, 0.1); display: flex; align-items: center; justify-content: center; }
+        .video-frame { width: 100%; max-width: 850px; aspect-ratio: 16 / 9; background: #030303; border: 2px solid #262626; border-radius: 12px; position: relative; overflow: hidden; box-shadow: 0 20px 55px rgba(0, 0, 0, 0.95), 0 0 30px rgba(251, 191, 36, 0.1); display: flex; align-items: center; justify-content: center; }
         .video-frame.active { border-color: #fbbf24; }
 
-        canvas#videoCanvas, video#aiVideoPlayer { width: 100%; height: 100%; object-fit: cover; display: block; }
-        video#aiVideoPlayer { display: none; background: #000; }
+        canvas#videoCanvas, video#aiVideoPlayer { width: 100%; height: 100%; object-fit: cover; display: block; background: #000; }
+        video#aiVideoPlayer { display: none; }
 
-        .status-badge { position: absolute; top: 14px; left: 14px; background: rgba(0, 0, 0, 0.82); border: 1px solid #fbbf24; color: #fbbf24; padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: bold; display: flex; align-items: center; gap: 8px; z-index: 10; }
+        .status-badge { position: absolute; top: 14px; left: 14px; background: rgba(0, 0, 0, 0.88); border: 1px solid #fbbf24; color: #fbbf24; padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: bold; display: flex; align-items: center; gap: 8px; z-index: 10; }
         .rec-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; display: none; animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0; } }
 
@@ -59,11 +59,11 @@
     <header>
         <div class="logo">🦉 Athena AI <span>Cultura & Creación Visual</span></div>
         <div class="header-right">
-            <div class="user-email-box" title="Cuenta vinculada a athena-db">
+            <div class="user-email-box" title="Cuenta en athena-db">
                 <span style="font-size:0.8rem;">👤</span>
-                <input type="email" id="userEmail" value="admin@athena-ai.pages.dev" placeholder="Tu correo registrado..." />
+                <input type="email" id="userEmail" value="admin@athena-ai.pages.dev" placeholder="Tu correo..." />
             </div>
-            <div class="balance-badge" id="balanceDisplay">Saldo: Activo</div>
+            <div class="balance-badge" id="balanceDisplay">Saldo: $2.20</div>
             <button class="btn-save" id="saveBtn" onclick="guardarVideo()" disabled>💾 Guardar Video PC / USB</button>
         </div>
     </header>
@@ -72,7 +72,7 @@
         <div class="video-frame" id="videoFrame">
             <div class="status-badge">
                 <span class="rec-dot" id="recDot"></span>
-                <span id="statusText">Athena AI lista — Escribe tu visión simbólica abajo</span>
+                <span id="statusText">Athena AI lista — Elige modo y escribe tu visión abajo</span>
             </div>
             <canvas id="videoCanvas" width="1280" height="720"></canvas>
             <video id="aiVideoPlayer" controls loop playsinline></video>
@@ -82,14 +82,14 @@
     <footer class="prompt-dock">
         <div class="prompt-box">
             <select id="modeSelect" class="mode-select">
-                <option value="free">⚡ Modo Simbólico (Gratis)</option>
-                <option value="pro" selected>🏛️ Modo Pro IA ($0.55 USD)</option>
+                <option value="free" selected>⚡ Modo Cinemático (Gratis)</option>
+                <option value="pro">🏛️ Modo Pro IA ($0.55 USD)</option>
             </select>
-            <input type="text" id="promptInput" placeholder="Describe tu escena: Ej. Templo de Atenea iluminado por sabiduría dorada..." />
+            <input type="text" id="promptInput" placeholder="Describe tu escena: Ej. El Partenón bajo un cielo estrellado dorado..." />
             <button class="btn-generate" id="genBtn" onclick="iniciarCreacion()">✨ Crear Video</button>
         </div>
         <div class="footer-note">
-            Ecosistema <a href="https://genesis-ai.org" target="_blank">Genesis AI</a> • Recargas de saldo y soporte: <a href="mailto:admin@genesis-ai.org">admin@genesis-ai.org</a>
+            Ecosistema <a href="https://genesis-ai.org" target="_blank">Genesis AI</a> • Soporte y recargas: <a href="mailto:admin@genesis-ai.org">admin@genesis-ai.org</a>
         </div>
     </footer>
 
@@ -113,38 +113,38 @@
         let currentDownloadUrl = null;
         let currentFileName = "athena_ai_video.mp4";
 
-        // Pantalla ceremonial inicial
+        // Pantalla inicial estética
         function dibujarTemploInicial() {
-            ctx.fillStyle = '#070707';
+            ctx.fillStyle = '#030303';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Marco geométrico griego dorado
-            ctx.strokeStyle = 'rgba(251, 191, 36, 0.25)';
+            // Marco dorado doble
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.3)';
             ctx.lineWidth = 2;
-            ctx.strokeRect(45, 45, canvas.width - 90, canvas.height - 90);
-            ctx.strokeRect(55, 55, canvas.width - 110, canvas.height - 110);
+            ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
+            ctx.strokeRect(50, 50, canvas.width - 100, canvas.height - 100);
 
-            // Círculo áureo central
+            // Núcleo circular
             ctx.beginPath();
-            ctx.arc(canvas.width / 2, canvas.height / 2, 130, 0, Math.PI * 2);
-            ctx.strokeStyle = 'rgba(251, 191, 36, 0.15)';
+            ctx.arc(canvas.width / 2, canvas.height / 2, 120, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.2)';
             ctx.stroke();
 
             ctx.fillStyle = '#fbbf24';
             ctx.font = 'bold 36px Georgia, serif';
             ctx.textAlign = 'center';
-            ctx.fillText('ATHENA AI — ORÁCULO VISUAL', canvas.width / 2, canvas.height / 2 - 12);
+            ctx.fillText('ATHENA AI — ORÁCULO VISUAL', canvas.width / 2, canvas.height / 2 - 10);
 
             ctx.fillStyle = '#a3a3a3';
-            ctx.font = '19px Segoe UI, sans-serif';
-            ctx.fillText('Elige Modo Pro IA ($0.55) o Modo Simbólico Gratis y escribe tu visión abajo', canvas.width / 2, canvas.height / 2 + 28);
+            ctx.font = '18px Segoe UI, sans-serif';
+            ctx.fillText('Escribe tu visión abajo y elige Modo Cinemático Gratis o Pro IA ($0.55)', canvas.width / 2, canvas.height / 2 + 30);
         }
         dibujarTemploInicial();
 
         async function iniciarCreacion() {
             const prompt = promptInput.value.trim();
             if (!prompt) {
-                alert("Por favor escribe una descripción simbólica o escena para crear el video.");
+                alert("Por favor escribe una descripción para la escena.");
                 return;
             }
 
@@ -152,11 +152,11 @@
             if (modo === "pro") {
                 await generarVideoProAPI(prompt);
             } else {
-                generarVideoSimbolicoGratis(prompt);
+                generarVideoCinematicoGratis(prompt);
             }
         }
 
-        // 1. MODO PRO IA ($0.55 USD) — CONECTADO AL WORKER DE CLOUDFLARE
+        // 1. MODO PRO IA ($0.55 USD) — CONECTADO AL WORKER
         async function generarVideoProAPI(prompt) {
             if (animId) cancelAnimationFrame(animId);
             videoPlayer.style.display = "none";
@@ -167,23 +167,22 @@
             recDot.style.display = "inline-block";
             statusText.textContent = "🏛️ Conectando con Athena Worker ($0.55 USD)... Renderizando IA...";
 
-            // Animación de espera mientras la API procesa
             let t = 0;
             function animarEsperaAPI() {
                 t += 0.05;
-                ctx.fillStyle = 'rgba(7, 7, 7, 0.25)';
+                ctx.fillStyle = 'rgba(3, 3, 3, 0.3)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
                 ctx.beginPath();
-                ctx.arc(canvas.width / 2, canvas.height / 2, 90 + Math.sin(t) * 20, 0, Math.PI * 2);
+                ctx.arc(canvas.width / 2, canvas.height / 2, 80 + Math.sin(t) * 18, 0, Math.PI * 2);
                 ctx.strokeStyle = '#fbbf24';
                 ctx.lineWidth = 3;
                 ctx.stroke();
 
                 ctx.fillStyle = '#fbbf24';
-                ctx.font = 'bold 24px Segoe UI, sans-serif';
+                ctx.font = 'bold 22px Segoe UI, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('GENERANDO VIDEO CON INTELIGENCIA ARTIFICIAL...', canvas.width / 2, canvas.height / 2 + 155);
+                ctx.fillText('PROCESANDO VIDEO CON INTELIGENCIA ARTIFICIAL...', canvas.width / 2, canvas.height / 2 + 150);
                 animId = requestAnimationFrame(animarEsperaAPI);
             }
             animarEsperaAPI();
@@ -210,12 +209,10 @@
                     return;
                 }
 
-                // Actualizar saldo en pantalla
                 if (data.nuevoSaldo !== undefined) {
-                    balanceDisplay.textContent = `Saldo: $${data.nuevoSaldo.toFixed(2)} USD`;
+                    balanceDisplay.textContent = `Saldo: $${data.nuevoSaldo.toFixed(2)}`;
                 }
 
-                // Mostrar reproductor de video real MP4
                 canvas.style.display = "none";
                 videoPlayer.style.display = "block";
                 videoPlayer.src = data.videoUrl;
@@ -230,14 +227,14 @@
             } catch (error) {
                 cancelAnimationFrame(animId);
                 recDot.style.display = "none";
-                statusText.textContent = "❌ Error de conexión con el Worker de Athena";
+                statusText.textContent = "❌ Error de red con el Worker";
                 genBtn.disabled = false;
-                alert("Error de red al conectar con athena-video-api: " + error.message);
+                alert("Error de conexión: " + error.message);
             }
         }
 
-        // 2. MODO SIMBÓLICO GRATUITO (RENDER LOCAL EN NAVEGADOR)
-        function generarVideoSimbolicoGratis(prompt) {
+        // 2. MODO CINEMÁTICO GRATUITO (ANIMACIÓN FLUIDA EN CANVAS Y GRABACIÓN WEBM)
+        function generarVideoCinematicoGratis(prompt) {
             if (animId) cancelAnimationFrame(animId);
             videoPlayer.pause();
             videoPlayer.style.display = "none";
@@ -246,14 +243,16 @@
             genBtn.disabled = true;
             videoFrame.classList.add('active');
             recDot.style.display = "inline-block";
-            statusText.textContent = "⚡ Grabando animación simbólica gratuita (6 seg)...";
+            statusText.textContent = "⚡ Renderizando animación cinemática gratuita (6 seg)...";
 
-            const particulas = Array.from({ length: 85 }, () => ({
+            // Partículas de luz dorada en movimiento
+            const particulas = Array.from({ length: 120 }, () => ({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
-                r: Math.random() * 3.5 + 1.5,
-                vx: (Math.random() - 0.5) * 3.5,
-                vy: (Math.random() - 0.5) * 3.5
+                r: Math.random() * 4 + 1,
+                vx: (Math.random() - 0.5) * 4,
+                vy: (Math.random() - 0.5) * 4,
+                alpha: Math.random()
             }));
 
             const stream = canvas.captureStream(30);
@@ -264,55 +263,65 @@
             mediaRecorder.onstop = () => {
                 const blob = new Blob(chunks, { type: 'video/webm' });
                 currentDownloadUrl = URL.createObjectURL(blob);
-                currentFileName = "athena_simbolico.webm";
+                currentFileName = "athena_cinematico.webm";
                 recDot.style.display = "none";
-                statusText.textContent = "✅ Video Simbólico listo — Puedes guardarlo en tu PC o USB";
+                statusText.textContent = "✅ Video Cinemático listo — Puedes guardarlo en tu PC o USB";
                 saveBtn.disabled = false;
                 genBtn.disabled = false;
             };
 
             mediaRecorder.start();
             let frame = 0;
-            const totalFrames = 180;
+            const totalFrames = 180; // 6 segundos
 
             function animarGratis() {
                 frame++;
-                ctx.fillStyle = 'rgba(7, 7, 7, 0.25)';
+                // Fondo oscuro profundo con estela suave
+                ctx.fillStyle = 'rgba(3, 3, 3, 0.25)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Geometría sagrada rotatoria
-                ctx.save();
-                ctx.translate(canvas.width / 2, canvas.height / 2);
-                ctx.rotate(frame * 0.015);
-                ctx.strokeStyle = '#fbbf24';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(-140, -140, 280, 280);
-                ctx.rotate(Math.PI / 4);
-                ctx.strokeStyle = 'rgba(251, 191, 36, 0.5)';
-                ctx.strokeRect(-140, -140, 280, 280);
-                ctx.restore();
+                // Anillo de energía central dinámico
+                const pulso = Math.sin(frame * 0.05) * 35 + 160;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, pulso, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(251, 191, 36, 0.6)';
+                ctx.lineWidth = 3;
+                ctx.stroke();
 
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, pulso * 0.7, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Dibujar y mover partículas
                 particulas.forEach(p => {
                     p.x += p.vx;
                     p.y += p.vy;
                     if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
                     if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
                     ctx.beginPath();
                     ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
                     ctx.fillStyle = '#fbbf24';
+                    ctx.globalAlpha = 0.7;
                     ctx.fill();
+                    ctx.globalAlpha = 1.0;
                 });
 
+                // Texto de la escena con sombra cinematográfica
+                ctx.save();
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 34px Georgia, serif';
+                ctx.font = 'bold 36px Georgia, serif';
                 ctx.textAlign = 'center';
-                ctx.shadowColor = '#000';
-                ctx.shadowBlur = 10;
-                ctx.fillText(prompt.toUpperCase(), canvas.width / 2, canvas.height / 2 + 12);
+                ctx.shadowColor = '#000000';
+                ctx.shadowBlur = 15;
+                ctx.fillText(prompt.toUpperCase(), canvas.width / 2, canvas.height / 2 + 10);
 
                 ctx.fillStyle = '#fbbf24';
-                ctx.font = '16px Courier New, monospace';
-                ctx.fillText(`ATHENA AI • SABIDURÍA & CULTURA • FRAME ${frame}/${totalFrames}`, canvas.width / 2, canvas.height - 40);
+                ctx.font = '15px Courier New, monospace';
+                ctx.fillText(`ATHENA AI • MODO CINEMÁTICO • FRAME ${frame}/${totalFrames}`, canvas.width / 2, canvas.height - 45);
+                ctx.restore();
 
                 if (frame < totalFrames) {
                     animId = requestAnimationFrame(animarGratis);
@@ -323,11 +332,10 @@
             animarGratis();
         }
 
-        // Descargar video a PC o Pendrive USB
+        // Guardar archivo en PC o Pendrive USB
         async function guardarVideo() {
             if (!currentDownloadUrl) return;
             try {
-                // Si es una URL externa MP4, descargarlo como blob para forzar guardado directo en PC/USB
                 if (currentDownloadUrl.startsWith("http")) {
                     statusText.textContent = "⬇️ Descargando archivo MP4 a tu equipo...";
                     const res = await fetch(currentDownloadUrl);
@@ -340,7 +348,7 @@
                     a.click();
                     document.body.removeChild(a);
                     URL.revokeObjectURL(blobUrl);
-                    statusText.textContent = "✅ Archivo guardado en tu carpeta de Descargas / USB";
+                    statusText.textContent = "✅ Guardado con éxito en Descargas / USB";
                 } else {
                     const a = document.createElement('a');
                     a.href = currentDownloadUrl;
@@ -350,7 +358,6 @@
                     document.body.removeChild(a);
                 }
             } catch (e) {
-                // Respaldo si el navegador abre directo
                 window.open(currentDownloadUrl, '_blank');
             }
         }
