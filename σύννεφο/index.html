@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Athena AI — Creación de Video Fotorrealista</title>
+    <title>Athena AI — Diosa de la Cultura y Creación Visual</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background: #000000; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; overflow: hidden; border-top: 3px solid #fbbf24; }
@@ -41,7 +41,9 @@
         .prompt-box { width: 100%; max-width: 850px; display: flex; gap: 10px; background: #121212; border: 1px solid #333333; padding: 8px; border-radius: 10px; transition: border-color 0.2s; flex-wrap: wrap; }
         .prompt-box:focus-within { border-color: #fbbf24; }
 
-        .prompt-box input { flex: 1; min-width: 280px; background: transparent; border: none; color: #ffffff; font-size: 0.95rem; padding: 8px 10px; outline: none; }
+        .mode-select { background: #000000; color: #fbbf24; border: 1px solid #404040; padding: 8px 12px; border-radius: 7px; font-size: 0.85rem; font-weight: bold; outline: none; cursor: pointer; }
+
+        .prompt-box input { flex: 1; min-width: 220px; background: transparent; border: none; color: #ffffff; font-size: 0.95rem; padding: 8px 10px; outline: none; }
         .prompt-box input::placeholder { color: #666666; }
 
         .btn-generate { background: #fbbf24; color: #000000; border: none; padding: 10px 22px; border-radius: 7px; font-weight: bold; font-size: 0.9rem; cursor: pointer; transition: transform 0.15s, background 0.2s; white-space: nowrap; }
@@ -55,14 +57,14 @@
 <body>
 
     <header>
-        <div class="logo">🦉 Athena AI <span>Video Fotorrealista Pro ($0.55)</span></div>
+        <div class="logo">🦉 Athena AI <span>Cultura & Creación Visual</span></div>
         <div class="header-right">
             <div class="user-email-box" title="Cuenta en athena-db">
                 <span style="font-size:0.8rem;">👤</span>
-                <input type="email" id="userEmail" value="admin@athena-ai.pages.dev" placeholder="Tu correo..." />
+                <input type="email" id="userEmail" value="admin@genesis-ai.org" placeholder="Tu correo..." />
             </div>
-            <div class="balance-badge" id="balanceDisplay">Saldo: Verificando...</div>
-            <button class="btn-save" id="saveBtn" onclick="guardarVideo()" disabled>💾 Guardar Video MP4</button>
+            <div class="balance-badge" id="balanceDisplay">Saldo: $5.00</div>
+            <button class="btn-save" id="saveBtn" onclick="guardarVideo()" disabled>💾 Guardar Video PC / USB</button>
         </div>
     </header>
 
@@ -70,7 +72,7 @@
         <div class="video-frame" id="videoFrame">
             <div class="status-badge">
                 <span class="rec-dot" id="recDot"></span>
-                <span id="statusText">Athena AI lista — Escribe tu prompt y genera tu video real</span>
+                <span id="statusText">Athena AI lista — Elige modo y escribe tu visión abajo</span>
             </div>
             <canvas id="videoCanvas" width="1280" height="720"></canvas>
             <video id="aiVideoPlayer" controls loop playsinline></video>
@@ -79,8 +81,12 @@
 
     <footer class="prompt-dock">
         <div class="prompt-box">
-            <input type="text" id="promptInput" placeholder="Describe tu escena en detalle (Ej: Cinematic 4k, Greek goddess Athena in space...)" />
-            <button class="btn-generate" id="genBtn" onclick="generarVideoPro()">✨ Generar Video Pro ($0.55)</button>
+            <select id="modeSelect" class="mode-select">
+                <option value="free" selected>⚡ Modo Cinemático (Gratis)</option>
+                <option value="pro">🏛️ Modo Pro IA ($0.55 USD)</option>
+            </select>
+            <input type="text" id="promptInput" placeholder="Describe tu escena: Ej. Greek goddess Athena in space..." />
+            <button class="btn-generate" id="genBtn" onclick="iniciarCreacion()">✨ Crear Video</button>
         </div>
         <div class="footer-note">
             Ecosistema <a href="https://genesis-ai.org" target="_blank">Genesis AI</a> • Soporte y recargas: <a href="mailto:admin@genesis-ai.org">admin@genesis-ai.org</a>
@@ -94,6 +100,7 @@
         const ctx = canvas.getContext('2d');
         const videoPlayer = document.getElementById('aiVideoPlayer');
         const promptInput = document.getElementById('promptInput');
+        const modeSelect = document.getElementById('modeSelect');
         const userEmailInput = document.getElementById('userEmail');
         const balanceDisplay = document.getElementById('balanceDisplay');
         const genBtn = document.getElementById('genBtn');
@@ -104,8 +111,8 @@
 
         let animId = null;
         let currentDownloadUrl = null;
+        let currentFileName = "athena_ai_video.mp4";
 
-        // Pantalla inicial estética
         function dibujarTemploInicial() {
             ctx.fillStyle = '#030303';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -117,23 +124,32 @@
             ctx.fillStyle = '#fbbf24';
             ctx.font = 'bold 36px Georgia, serif';
             ctx.textAlign = 'center';
-            ctx.fillText('ATHENA AI — VIDEO FOTORREALISTA', canvas.width / 2, canvas.height / 2 - 15);
+            ctx.fillText('ATHENA AI — ORÁCULO VISUAL', canvas.width / 2, canvas.height / 2 - 15);
 
             ctx.fillStyle = '#a3a3a3';
             ctx.font = '18px Segoe UI, sans-serif';
-            ctx.fillText('Escribe tu prompt abajo para generar un video real de alta calidad ($0.55 USD)', canvas.width / 2, canvas.height / 2 + 25);
+            ctx.fillText('Elige Modo Gratis o Pro IA ($0.55) y crea tu video', canvas.width / 2, canvas.height / 2 + 25);
         }
         dibujarTemploInicial();
 
-        async function generarVideoPro() {
+        async function iniciarCreacion() {
             const prompt = promptInput.value.trim();
             if (!prompt) {
-                alert("Por favor escribe una descripción para el video.");
+                alert("Por favor escribe una descripción para la escena.");
                 return;
             }
 
+            const modo = modeSelect.value;
+            if (modo === "pro") {
+                await generarVideoProAPI(prompt);
+            } else {
+                generarVideoCinematicoGratis(prompt);
+            }
+        }
+
+        // MODO PRO IA ($0.55 USD)
+        async function generarVideoProAPI(prompt) {
             if (animId) cancelAnimationFrame(animId);
-            videoPlayer.pause();
             videoPlayer.style.display = "none";
             canvas.style.display = "block";
             saveBtn.disabled = true;
@@ -142,9 +158,8 @@
             recDot.style.display = "inline-block";
             statusText.textContent = "🏛️ Conectando con Athena Worker ($0.55 USD)... Renderizando IA real...";
 
-            // Animación de espera circular dorada
             let t = 0;
-            function animarEspera() {
+            function animarEsperaAPI() {
                 t += 0.05;
                 ctx.fillStyle = 'rgba(3, 3, 3, 0.3)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -158,17 +173,17 @@
                 ctx.fillStyle = '#fbbf24';
                 ctx.font = 'bold 22px Segoe UI, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('CREANDO VIDEO FOTORREALISTA (ESTO TOMA UNOS SEGUNDOS)...', canvas.width / 2, canvas.height / 2 + 150);
-                animId = requestAnimationFrame(animarEspera);
+                ctx.fillText('GENERANDO VIDEO FOTORREALISTA...', canvas.width / 2, canvas.height / 2 + 150);
+                animId = requestAnimationFrame(animarEsperaAPI);
             }
-            animarEspera();
+            animarEsperaAPI();
 
             try {
                 const response = await fetch(WORKER_API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        email: userEmailInput.value.trim() || "admin@athena-ai.pages.dev",
+                        email: userEmailInput.value.trim() || "admin@genesis-ai.org",
                         prompt: prompt
                     })
                 });
@@ -189,14 +204,14 @@
                     balanceDisplay.textContent = `Saldo: $${data.nuevoSaldo.toFixed(2)}`;
                 }
 
-                // Reproducir el video MP4 real devuelto por la IA
                 canvas.style.display = "none";
                 videoPlayer.style.display = "block";
                 videoPlayer.src = data.videoUrl;
                 videoPlayer.play();
 
                 currentDownloadUrl = data.videoUrl;
-                statusText.textContent = "✅ Video Pro generado con éxito — Listo para guardar en PC o USB";
+                currentFileName = "athena_ai_pro.mp4";
+                statusText.textContent = "✅ Video Pro generado ($0.55 cobrados) — Listo para PC / USB";
                 saveBtn.disabled = false;
                 genBtn.disabled = false;
 
@@ -209,29 +224,114 @@
             }
         }
 
-        // Descargar archivo MP4 a PC o Pendrive USB
+        // MODO GRATUITO (CINEMÁTICO LOCAL)
+        function generarVideoCinematicoGratis(prompt) {
+            if (animId) cancelAnimationFrame(animId);
+            videoPlayer.pause();
+            videoPlayer.style.display = "none";
+            canvas.style.display = "block";
+            saveBtn.disabled = true;
+            genBtn.disabled = true;
+            videoFrame.classList.add('active');
+            recDot.style.display = "inline-block";
+            statusText.textContent = "⚡ Renderizando animación gratuita de prueba (6 seg)...";
+
+            const estrellas = Array.from({ length: 120 }, () => ({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                r: Math.random() * 2 + 0.5,
+                alpha: Math.random()
+            }));
+
+            const stream = canvas.captureStream(30);
+            const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+            const chunks = [];
+
+            mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                currentDownloadUrl = URL.createObjectURL(blob);
+                currentFileName = "athena_gratis.webm";
+                recDot.style.display = "none";
+                statusText.textContent = "✅ Video de prueba listo — Puedes guardarlo en tu PC o USB";
+                saveBtn.disabled = false;
+                genBtn.disabled = false;
+            };
+
+            mediaRecorder.start();
+            let frame = 0;
+            const totalFrames = 180;
+
+            function animarGratis() {
+                frame++;
+                ctx.fillStyle = '#020205';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                estrellas.forEach(s => {
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${Math.random()})`;
+                    ctx.fill();
+                });
+
+                const pulso = Math.sin(frame * 0.05) * 25 + 140;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, pulso, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(251, 191, 36, 0.6)';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 32px Georgia, serif';
+                ctx.textAlign = 'center';
+                ctx.shadowColor = '#000000';
+                ctx.shadowBlur = 12;
+                ctx.fillText(prompt.toUpperCase(), canvas.width / 2, canvas.height / 2 + 10);
+
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = '14px Courier New, monospace';
+                ctx.fillText(`ATHENA AI • MODO GRATIS • FRAME ${frame}/${totalFrames}`, canvas.width / 2, canvas.height - 35);
+                ctx.restore();
+
+                if (frame < totalFrames) {
+                    animId = requestAnimationFrame(animarGratis);
+                } else {
+                    mediaRecorder.stop();
+                }
+            }
+            animarGratis();
+        }
+
         async function guardarVideo() {
             if (!currentDownloadUrl) return;
             try {
-                statusText.textContent = "⬇️ Descargando archivo MP4 a tu equipo...";
-                const res = await fetch(currentDownloadUrl);
-                const blob = await res.blob();
-                const blobUrl = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = blobUrl;
-                a.download = "athena_ai_video.mp4";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(blobUrl);
-                statusText.textContent = "✅ Video guardado con éxito en Descargas / USB";
+                if (currentDownloadUrl.startsWith("http")) {
+                    const res = await fetch(currentDownloadUrl);
+                    const blob = await res.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = blobUrl;
+                    a.download = currentFileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(blobUrl);
+                } else {
+                    const a = document.createElement('a');
+                    a.href = currentDownloadUrl;
+                    a.download = currentFileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
             } catch (e) {
                 window.open(currentDownloadUrl, '_blank');
             }
         }
 
         promptInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') generarVideoPro();
+            if (e.key === 'Enter') iniciarCreacion();
         });
     </script>
 </body>
