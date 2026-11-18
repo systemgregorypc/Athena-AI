@@ -1,0 +1,8 @@
+name = "athena-video-api"
+main = "index.js"
+compatibility_date = "2026-03-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "athena-db"
+database_id = "b6cb5bb2-ae96-491d-ac22-a33f22a98c75"
