@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Athena AI — Plataforma de Video Profesional</title>
+    <title>Athena AI — Motor de Creación Inteligente</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background: #000000; color: #f8fafc; height: 100vh; display: flex; flex-direction: column; overflow: hidden; border-top: 3px solid #fbbf24; }
@@ -56,7 +56,7 @@
 <body>
 
     <header>
-        <div class="logo">🦉 Athena AI <span>Plataforma Pro</span></div>
+        <div class="logo">🦉 Athena AI <span>Motor Inteligente Pro</span></div>
         <div class="header-right">
             <div class="user-email-box" title="Cuenta en athena-db">
                 <span style="font-size:0.8rem;">👤</span>
@@ -71,7 +71,7 @@
         <div class="video-frame" id="videoFrame">
             <div class="status-badge">
                 <span class="rec-dot" id="recDot"></span>
-                <span id="statusText">Athena AI lista — Escribe tu prompt y genera tu video</span>
+                <span id="statusText">Athena lista — Escribe tu objeto y colores (Ej: Pelota pastel, Galaxia neón)</span>
             </div>
             <canvas id="videoCanvas" width="1280" height="720"></canvas>
         </div>
@@ -83,7 +83,7 @@
                 <option value="free" selected>⚡ Modo Cinemático (Gratis)</option>
                 <option value="pro">🏛️ Modo Pro IA ($0.55 USD)</option>
             </select>
-            <input type="text" id="promptInput" placeholder="Describe tu escena: Ej. Cinematic Athena in space..." />
+            <input type="text" id="promptInput" placeholder="Ej. Pelota flotante en tonos pasteles rosados y celestes..." />
             <button class="btn-generate" id="genBtn" onclick="iniciarCreacion()">✨ Crear Video</button>
         </div>
         <div class="footer-note">
@@ -108,7 +108,37 @@
 
         let animId = null;
         let currentDownloadUrl = null;
-        let currentFileName = "athena_ai_video.webm";
+        let currentFileName = "athena_inteligente.webm";
+
+        // BASE DE DATOS INTELIGENTE DE COLORES Y PALETAS
+        const paletasColores = {
+            pastel: { fondo: ['#1a1025', '#2c163a'], principal: '#ffb3ba', secundario: '#bae1ff', acento: '#ffffba' },
+            neon: { fondo: ['#050505', '#0f021a'], principal: '#00ffcc', secundario: '#ff007f', acento: '#ffff00' },
+            fuego: { fondo: ['#1a0500', '#2d0f00'], principal: '#ff4500', secundario: '#ff8c00', acento: '#ffd700' },
+            dorado: { fondo: ['#0a0802', '#1f1905'], principal: '#fbbf24', secundario: '#d97706', acento: '#fef08a' },
+            oceano: { fondo: ['#02101a', '#052233'], principal: '#38bdf8', secundario: '#0284c7', acento: '#7dd3fc' },
+            default: { fondo: ['#030305', '#120f1a'], principal: '#fbbf24', secundario: '#a855f7', acento: '#38bdf8' }
+        };
+
+        function analizarPrompt(texto) {
+            const t = texto.toLowerCase();
+            let paleta = paletasColores.default;
+            let forma = 'pelota'; // por defecto esfera/pelota
+
+            // Detección de paleta
+            if (t.includes('pastel') || t.includes('suave') || t.includes('rosa')) paleta = paletasColores.pastel;
+            else if (t.includes('neón') || t.includes('neon') || t.includes('cyber')) paleta = paletasColores.neon;
+            else if (t.includes('fuego') || t.includes('lava') || t.includes('rojo')) paleta = paletasColores.fuego;
+            else if (t.includes('oro') || t.includes('dorado') || t.includes('lujo')) paleta = paletasColores.dorado;
+            else if (t.includes('agua') || t.includes('mar') || t.includes('azul') || t.includes('oceano')) paleta = paletasColores.oceano;
+
+            // Detección de forma
+            if (t.includes('cubo') || t.includes('caja') || t.includes('templo')) forma = 'cubo';
+            else if (t.includes('anillo') || t.includes('portal') || t.includes('aro')) forma = 'anillo';
+            else if (t.includes('estrella') || t.includes('cosmos')) forma = 'estrella';
+            
+            return { paleta, forma, original: texto };
+        }
 
         function dibujarTemploInicial() {
             ctx.fillStyle = '#030303';
@@ -119,13 +149,13 @@
             ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
 
             ctx.fillStyle = '#fbbf24';
-            ctx.font = 'bold 36px Georgia, serif';
+            ctx.font = 'bold 34px Georgia, serif';
             ctx.textAlign = 'center';
-            ctx.fillText('ATHENA AI — ESTUDIO DE VIDEO', canvas.width / 2, canvas.height / 2 - 15);
+            ctx.fillText('ATHENA AI — MOTOR INTELIGENTE', canvas.width / 2, canvas.height / 2 - 15);
 
             ctx.fillStyle = '#a3a3a3';
-            ctx.font = '18px Segoe UI, sans-serif';
-            ctx.fillText('Escribe tu visión abajo y genera tu video de alta calidad', canvas.width / 2, canvas.height / 2 + 25);
+            ctx.font = '16px Segoe UI, sans-serif';
+            ctx.fillText('Escribe tu objeto y colores y genera tu video personalizado', canvas.width / 2, canvas.height / 2 + 25);
         }
         dibujarTemploInicial();
 
@@ -139,9 +169,8 @@
             const modo = modeSelect.value;
             
             if (modo === "pro") {
-                // 1. Validar y descontar saldo a través del Worker (worker.js)
                 genBtn.disabled = true;
-                statusText.textContent = "🏛️ Conectando con worker.js ($0.55 USD)... Validando base de datos...";
+                statusText.textContent = "🏛️ Conectando con worker.js ($0.55 USD)... Validando saldo...";
                 recDot.style.display = "inline-block";
                 videoFrame.classList.add('active');
 
@@ -162,16 +191,15 @@
                         statusText.textContent = "⚠️ " + (data.error || "Error al procesar saldo");
                         dibujarTemploInicial();
                         genBtn.disabled = false;
-                        alert(data.error || "Saldo insuficiente o error en base de datos.");
+                        alert(data.error || "Saldo insuficiente en base de datos.");
                         return;
                     }
 
-                    // Actualizar saldo en la esquina superior
                     if (data.nuevoSaldo !== undefined) {
                         balanceDisplay.textContent = `Saldo: $${data.nuevoSaldo.toFixed(2)}`;
                     }
 
-                    statusText.textContent = "✅ Saldo descontado ($0.55) — Renderizando video Pro extendido...";
+                    statusText.textContent = "✅ Saldo descontado ($0.55) — IA generando objeto y colores...";
                 } catch (error) {
                     recDot.style.display = "none";
                     statusText.textContent = "❌ Error de conexión con el Worker";
@@ -181,24 +209,26 @@
                 }
             }
 
-            // 2. Renderizar video fluido de larga duración directamente en el navegador
-            renderizarVideoFluido(prompt, modo === "pro" ? "ATHENA PRO (IA)" : "ATHENA MODO LIBRE");
+            // Interpretar prompt y renderizar dinámicamente
+            const configVisual = analizarPrompt(prompt);
+            renderizarVideoInteligente(configVisual);
         }
 
-        function renderizarVideoFluido(prompt, tituloModo) {
+        function renderizarVideoInteligente(config) {
             if (animId) cancelAnimationFrame(animId);
             saveBtn.disabled = true;
             genBtn.disabled = true;
             videoFrame.classList.add('active');
             recDot.style.display = "inline-block";
-            statusText.textContent = "⚡ Renderizando video fluido en alta definición (10 segundos)...";
+            statusText.textContent = `🎨 IA renderizando forma [${config.forma.toUpperCase()}] con paleta personalizada (10s)...`;
 
-            const estrellas = Array.from({ length: 150 }, () => ({
+            // Partículas de fondo adaptadas a la paleta
+            const particulas = Array.from({ length: 180 }, () => ({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
-                r: Math.random() * 2.2 + 0.5,
-                alpha: Math.random(),
-                speed: Math.random() * 1.5 + 0.5
+                r: Math.random() * 2.5 + 0.5,
+                speedX: (Math.random() - 0.5) * 1.2,
+                speedY: (Math.random() - 0.5) * 1.2
             }));
 
             const stream = canvas.captureStream(30);
@@ -209,60 +239,111 @@
             mediaRecorder.onstop = () => {
                 const blob = new Blob(chunks, { type: 'video/webm' });
                 currentDownloadUrl = URL.createObjectURL(blob);
-                currentFileName = "athena_video_pro.webm";
+                currentFileName = `athena_${config.forma}.webm`;
                 recDot.style.display = "none";
-                statusText.textContent = "✅ ¡Video Pro generado con éxito! Listo para guardar en PC o USB";
+                statusText.textContent = "✅ ¡Video inteligente generado! Listo para guardar en PC o USB";
                 saveBtn.disabled = false;
                 genBtn.disabled = false;
             };
 
             mediaRecorder.start();
             let frame = 0;
-            const totalFrames = 300; // 10 segundos completos a 30fps
+            const totalFrames = 300; // 10 segundos
 
             function animar() {
                 frame++;
-                ctx.fillStyle = '#010103';
+                
+                // Fondo con degradado dinámico según la paleta seleccionada
+                const gradFondo = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 50, canvas.width/2, canvas.height/2, 700);
+                gradFondo.addColorStop(0, config.paleta.fondo[1]);
+                gradFondo.addColorStop(1, config.paleta.fondo[0]);
+                ctx.fillStyle = gradFondo;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Movimiento estelar de fondo
-                estrellas.forEach(s => {
-                    s.x -= s.speed;
-                    if (s.x < 0) s.x = canvas.width;
+                // Mover y dibujar partículas
+                particulas.forEach(p => {
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+                    if (p.x < 0) p.x = canvas.width;
+                    if (p.x > canvas.width) p.x = 0;
+                    if (p.y < 0) p.y = canvas.height;
+                    if (p.y > canvas.height) p.y = 0;
+
                     ctx.beginPath();
-                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`;
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = config.paleta.acento;
+                    ctx.globalAlpha = 0.6;
                     ctx.fill();
+                    ctx.globalAlpha = 1.0;
                 });
 
-                // Anillo central cinemático en expansión
-                const radioPulso = Math.sin(frame * 0.03) * 35 + 160;
-                ctx.beginPath();
-                ctx.arc(canvas.width / 2, canvas.height / 2, radioPulso, 0, Math.PI * 2);
-                ctx.strokeStyle = 'rgba(251, 191, 36, 0.7)';
-                ctx.lineWidth = 4;
-                ctx.stroke();
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+                const pulso = Math.sin(frame * 0.04) * 20;
 
-                // Marco dorado central
-                ctx.strokeStyle = 'rgba(251, 191, 36, 0.25)';
+                // RENDERIZADO INTELIGENTE SEGÚN LA FORMA DETECTADA
+                ctx.save();
+                if (config.forma === 'pelota') {
+                    // Esfera / Pelota 3D con brillo dinámico
+                    const gradEsfera = ctx.createRadialGradient(cx - 30, cy - 30, 10, cx, cy, 140 + pulso);
+                    gradEsfera.addColorStop(0, config.paleta.acento);
+                    gradEsfera.addColorStop(0.5, config.paleta.principal);
+                    gradEsfera.addColorStop(1, config.paleta.secundario);
+
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 130 + pulso, 0, Math.PI * 2);
+                    ctx.fillStyle = gradEsfera;
+                    ctx.shadowColor = config.paleta.principal;
+                    ctx.shadowBlur = 35;
+                    ctx.fill();
+                } else if (config.forma === 'cubo') {
+                    // Cubo Geométrico Rotatorio
+                    ctx.translate(cx, cy);
+                    ctx.rotate(frame * 0.02);
+                    ctx.strokeStyle = config.paleta.principal;
+                    ctx.lineWidth = 4;
+                    ctx.shadowColor = config.paleta.acento;
+                    ctx.shadowBlur = 25;
+                    ctx.strokeRect(-90 - pulso/2, -90 - pulso/2, 180 + pulso, 180 + pulso);
+                } else if (config.forma === 'anillo') {
+                    // Anillo / Portal Energético
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 140 + pulso, 0, Math.PI * 2);
+                    ctx.strokeStyle = config.paleta.principal;
+                    ctx.lineWidth = 8;
+                    ctx.shadowColor = config.paleta.acento;
+                    ctx.shadowBlur = 40;
+                    ctx.stroke();
+                } else {
+                    // Estrella / Núcleo Central
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 110 + pulso, 0, Math.PI * 2);
+                    ctx.fillStyle = config.paleta.principal;
+                    ctx.shadowColor = config.paleta.acento;
+                    ctx.shadowBlur = 30;
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // Marco decorativo
+                ctx.strokeStyle = 'rgba(251, 191, 36, 0.2)';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(60, 60, canvas.width - 120, canvas.height - 120);
+                ctx.strokeRect(50, 50, canvas.width - 100, canvas.height - 100);
 
-                // Texto del prompt en pantalla
+                // Texto del Prompt integrado en el centro con relieve
                 ctx.save();
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 30px Georgia, serif';
+                ctx.font = 'bold 28px Georgia, serif';
                 ctx.textAlign = 'center';
-                ctx.shadowColor = '#fbbf24';
-                ctx.shadowBlur = 15;
-                
-                // Mostrar prompt con efecto dinámico
-                const textoMostrar = prompt.length > 55 ? prompt.substring(0, 52) + "..." : prompt;
-                ctx.fillText(textoMostrar.toUpperCase(), canvas.width / 2, canvas.height / 2 + 10);
+                ctx.shadowColor = '#000000';
+                ctx.shadowBlur = 12;
 
-                ctx.fillStyle = '#fbbf24';
+                const textoMostrar = config.original.length > 50 ? config.original.substring(0, 47) + "..." : config.original;
+                ctx.fillText(textoMostrar.toUpperCase(), cx, cy + 10);
+
+                ctx.fillStyle = config.paleta.acento;
                 ctx.font = '13px Courier New, monospace';
-                ctx.fillText(`${tituloModo} • PROGRESO: ${Math.round((frame / totalFrames) * 100)}%`, canvas.width / 2, canvas.height - 45);
+                ctx.fillText(`ATHENA IA • FORMA: ${config.forma.toUpperCase()} • PROGRESO: ${Math.round((frame / totalFrames) * 100)}%`, cx, canvas.height - 45);
                 ctx.restore();
 
                 if (frame < totalFrames) {
